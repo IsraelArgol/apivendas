@@ -1,0 +1,9 @@
+{
+  "name": "pix-dashboard-backend",
+  "version": "1.0.0",
+  "description": "Backend for PIX Sales Dashboard",
+  "main": "backend/index.js",
+  "dependencies": {
+    "firebase-admin": "^11.5.0"
+  }
+}

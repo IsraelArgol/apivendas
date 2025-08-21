@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Inter', sans-serif; } </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <main class="flex-1 p-8">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-white">Painel do Administrador</h2>
+                <p class="text-gray-400">Logado como Israel</p>
+            </div>
+            <div>
+                <input type="date" id="admin-date-filter" class="bg-gray-700 border-gray-600 rounded-lg px-4 py-2 text-white">
+                <a href="../index.html" class="ml-4 text-sm text-gray-400 hover:underline">Sair</a>
+            </div>
+        </header>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- PAINEL THAUAN -->
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 space-y-4">
+                <h3 class="text-2xl font-bold text-pink-400">Thauan</h3>
+                <div><label class="text-sm text-gray-400">Total Gerado (R$)</label><input id="thauan-gerado" type="number" step="0.01" class="w-full bg-gray-700 p-2 rounded-md mt-1 text-white"></div>
+                <div><label class="text-sm text-gray-400">Total Pago (R$)</label><input id="thauan-pago" type="number" step="0.01" class="w-full bg-gray-700 p-2 rounded-md mt-1 text-white"></div>
+            </div>
+            <!-- PAINEL FRANCO -->
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 space-y-4">
+                <h3 class="text-2xl font-bold text-cyan-400">Franco</h3>
+                <div><label class="text-sm text-gray-400">Total Gerado (R$)</label><input id="franco-gerado" type="number" step="0.01" class="w-full bg-gray-700 p-2 rounded-md mt-1 text-white"></div>
+                <div><label class="text-sm text-gray-400">Total Pago (R$)</label><input id="franco-pago" type="number" step="0.01" class="w-full bg-gray-700 p-2 rounded-md mt-1 text-white"></div>
+            </div>
+        </div>
+        <div class="mt-8 text-center">
+            <button id="save-data-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg">Salvar Dados do Dia</button>
+        </div>
+    </main>
+
+    <script>
+        const BACKEND_URL = '/api/data';
+        const adminDateFilter = document.getElementById('admin-date-filter');
+
+        async function saveData(date, thauanData, francoData) {
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, thauanData, francoData })
+                });
+                if (!response.ok) throw new Error('Erro ao salvar os dados.');
+                alert(`Dados para o dia ${date.split('-').reverse().join('/')} salvos com sucesso!`);
+            } catch (error) {
+                console.error(error);
+                alert('Não foi possível salvar os dados.');
+            }
+        }
+
+        async function loadDataForAdmin(date) {
+             try {
+                const response = await fetch(`${BACKEND_URL}?date=${date}`);
+                if (!response.ok) throw new Error('Erro ao buscar dados do backend.');
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return { thauan: { totalGerado: 0, totalPago: 0 }, franco: { totalGerado: 0, totalPago: 0 } };
+            }
+        }
+
+        async function refreshAdminDashboard() {
+            const date = adminDateFilter.value;
+            const data = await loadDataForAdmin(date);
+            document.getElementById('thauan-gerado').value = data.thauan.totalGerado.toFixed(2);
+            document.getElementById('thauan-pago').value = data.thauan.totalPago.toFixed(2);
+            document.getElementById('franco-gerado').value = data.franco.totalGerado.toFixed(2);
+            document.getElementById('franco-pago').value = data.franco.totalPago.toFixed(2);
+        }
+
+        document.getElementById('save-data-btn').addEventListener('click', () => {
+            const date = adminDateFilter.value;
+            const thauanData = { totalGerado: parseFloat(document.getElementById('thauan-gerado').value) || 0, totalPago: parseFloat(document.getElementById('thauan-pago').value) || 0 };
+            const francoData = { totalGerado: parseFloat(document.getElementById('franco-gerado').value) || 0, totalPago: parseFloat(document.getElementById('franco-pago').value) || 0 };
+            saveData(date, thauanData, francoData);
+        });
+
+        adminDateFilter.addEventListener('change', refreshAdminDashboard);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            adminDateFilter.value = new Date().toISOString().split('T')[0];
+            refreshAdminDashboard();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Thauan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader { border-top-color: #FFFFFF; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .result-textarea { resize: none; user-select: all; }
+        .bg-tribo-pink { background-color: #EC008C; }
+        .hover\:bg-tribo-pink-dark:hover { background-color: #c90078; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex">
+
+    <!-- MENU LATERAL -->
+    <aside class="w-64 bg-gray-800 p-6 flex flex-col border-r border-gray-700">
+        <h1 class="text-2xl font-bold mb-10 text-white">Dashboard</h1>
+        <nav class="flex-grow space-y-2">
+            <button data-view="dashboard" class="nav-btn w-full flex items-center p-3 rounded-lg bg-pink-600 text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span class="ml-4 font-medium">Visão Geral</span>
+            </button>
+            <button data-view="generator" class="nav-btn w-full flex items-center p-3 rounded-lg text-gray-300 hover:bg-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span class="ml-4 font-medium">Gerar PIX</span>
+            </button>
+        </nav>
+        <div class="mt-auto">
+            <p class="text-sm text-gray-400">Logado como:</p>
+            <p class="font-semibold text-white truncate">Thauan</p>
+            <a href="../index.html" class="block w-full text-left mt-4 p-3 rounded-lg text-gray-300 hover:bg-gray-700 text-sm">Sair</a>
+        </div>
+    </aside>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-1 p-8 overflow-y-auto">
+        <!-- TELA DASHBOARD -->
+        <div id="dashboard-view">
+            <header class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-white">Visão Geral do Dia</h2>
+                <input type="date" id="date-filter" class="bg-gray-700 border-gray-600 rounded-lg px-4 py-2 text-white">
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700"><h3 class="text-gray-400 text-sm">Total Gerado</h3><p id="total-gerado" class="text-3xl font-bold text-cyan-400 mt-2">R$ 0,00</p></div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700"><h3 class="text-gray-400 text-sm">Total Recebido (Pago)</h3><p id="total-pago" class="text-3xl font-bold text-green-400 mt-2">R$ 0,00</p></div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700"><h3 class="text-gray-400 text-sm">Comissão a Receber (10%)</h3><p id="comissao-receber" class="text-3xl font-bold text-purple-400 mt-2">R$ 0,00</p></div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                <div class="flex justify-between items-center mb-2"><h3 class="text-gray-400 text-sm">Meta do Dia</h3><span class="text-sm font-semibold">R$ 1.200,00</span></div>
+                <div class="w-full bg-gray-700 rounded-full h-4"><div id="meta-progress" class="bg-gradient-to-r from-pink-500 to-purple-500 h-4 rounded-full" style="width: 0%;"></div></div>
+                <p id="meta-atingida" class="hidden text-center mt-4 font-semibold text-lg text-green-400">🎉 Parabéns! Meta batida! Bônus de R$ 100,00! 🎉</p>
+            </div>
+        </div>
+        <!-- TELA GERADOR DE PIX -->
+        <div id="generator-view" class="hidden max-w-lg mx-auto">
+            <h2 class="text-3xl font-bold text-white mb-8 text-center">Gerar Nova Cobrança</h2>
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700">
+                <form id="pix-form" class="space-y-6">
+                    <div><label for="amount" class="block text-sm font-medium text-gray-300">Valor</label><input type="text" id="amount" value="39.90" class="mt-1 block w-full px-4 py-3 bg-gray-700 rounded-lg text-lg" required></div>
+                    <div class="flex justify-between items-center">
+                        <label for="customer-name" class="block text-sm text-gray-300">Nome</label>
+                        <button type="button" id="generate-customer-btn" class="text-xs bg-gray-600 hover:bg-gray-500 text-white font-semibold py-1 px-2 rounded">Gerar Cliente Aleatório</button>
+                    </div>
+                    <input type="text" id="customer-name" value="Cliente Exemplo" class="block w-full px-3 py-2 bg-gray-700 rounded-md" required>
+                    <div><label for="customer-document" class="block text-sm text-gray-300">CPF</label><input type="text" id="customer-document" value="12345678900" class="mt-1 block w-full px-3 py-2 bg-gray-700 rounded-md" required></div>
+                    <div><button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 rounded-lg text-white bg-tribo-pink hover:bg-tribo-pink-dark font-semibold"><span id="button-text">Gerar PIX</span><div id="loader" class="loader ease-linear rounded-full border-2 border-t-2 h-5 w-5 ml-3 hidden"></div></button></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE RESULTADO -->
+    <div id="result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+        <div id="result-content" class="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md border border-gray-700"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO THAUAN ---
+        const USER_KEY = 'thauan';
+        const USER_CONFIG = { name: "Thauan", gateway: "tribopay", offerHash: "tuojoxnadc", productHash: "twilgxo3ev" };
+        const API_TOKEN = "AgmiVk3UCB9M7K3Q8VepVqRmpbR8q3ZysF0zN8QXY7UrAARW6U4TrIEPzB4T";
+        const API_URL = "https://api.tribopay.com.br/api/public/v1/transactions";
+        const META_DIARIA = 1200;
+        const BACKEND_URL = '/api/data';
+
+        // --- LÓGICA DO PAINEL ---
+        const dateFilter = document.getElementById('date-filter');
+        const resultModal = document.getElementById('result-modal');
+        const resultContent = document.getElementById('result-content');
+
+        async function loadData(date, userKey) {
+            try {
+                const response = await fetch(`${BACKEND_URL}?date=${date}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Erro do backend (Status: ${response.status}): ${errorText}`);
+                }
+                const allData = await response.json();
+                return allData[userKey] || { totalGerado: 0, totalPago: 0 };
+            } catch (error) {
+                console.error("Detalhes do erro:", error);
+                alert(`Não foi possível carregar os dados.\n\nDetalhes: ${error.message}\n\nVerifique o console do navegador (F12) para mais informações.`);
+                return { totalGerado: 0, totalPago: 0 };
+            }
+        }
+
+        function updateDashboardUI({ totalGerado, totalPago }) {
+            const comissao = totalPago * 0.10;
+            document.getElementById('total-gerado').textContent = `R$ ${totalGerado.toFixed(2).replace('.', ',')}`;
+            document.getElementById('total-pago').textContent = `R$ ${totalPago.toFixed(2).replace('.', ',')}`;
+            document.getElementById('comissao-receber').textContent = `R$ ${comissao.toFixed(2).replace('.', ',')}`;
+            const progresso = Math.min((totalPago / META_DIARIA) * 100, 100);
+            document.getElementById('meta-progress').style.width = `${progresso}%`;
+            document.getElementById('meta-atingida').classList.toggle('hidden', totalPago < META_DIARIA);
+        }
+
+        async function refreshDashboard() {
+            const data = await loadData(dateFilter.value, USER_KEY);
+            updateDashboardUI(data);
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('bg-pink-600', btn.dataset.view === viewName);
+                btn.classList.toggle('text-white', btn.dataset.view === viewName);
+                btn.classList.toggle('text-gray-300', btn.dataset.view !== viewName);
+            });
+            document.getElementById('dashboard-view').classList.toggle('hidden', viewName !== 'dashboard');
+            document.getElementById('generator-view').classList.toggle('hidden', viewName !== 'generator');
+        }
+
+        // --- GERADOR DE CLIENTE ALEATÓRIO ---
+        function generateRandomCustomer() {
+            const nomes = ["Lucas", "Sofia", "Arthur", "Julia", "Bernardo", "Isabella", "Heitor", "Manuela", "Davi", "Laura", "Miguel", "Alice", "Gael", "Helena", "Theo", "Maria Alice", "Gabriel", "Valentina", "Ravi", "Antonella", "João Miguel", "Maitê"];
+            const sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes", "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Cardoso", "Pinto", "Rocha", "Correia", "Dias", "Barbosa", "Araujo"];
+            document.getElementById('customer-name').value = `${nomes[Math.floor(Math.random() * nomes.length)]} ${sobrenomes[Math.floor(Math.random() * sobrenomes.length)]}`;
+            function randomiza(n) { return Math.round(Math.random() * n); }
+            const n = 9;
+            const n1 = randomiza(n), n2 = randomiza(n), n3 = randomiza(n), n4 = randomiza(n), n5 = randomiza(n), n6 = randomiza(n), n7 = randomiza(n), n8 = randomiza(n), n9 = randomiza(n);
+            let d1 = n9 * 2 + n8 * 3 + n7 * 4 + n6 * 5 + n5 * 6 + n4 * 7 + n3 * 8 + n2 * 9 + n1 * 10;
+            d1 = 11 - (Math.round(d1 - (Math.floor(d1 / 11) * 11)));
+            if (d1 >= 10) d1 = 0;
+            let d2 = d1 * 2 + n9 * 3 + n8 * 4 + n7 * 5 + n6 * 6 + n5 * 7 + n4 * 8 + n3 * 9 + n2 * 10 + n1 * 11;
+            d2 = 11 - (Math.round(d2 - (Math.floor(d2 / 11) * 11)));
+            if (d2 >= 10) d2 = 0;
+            document.getElementById('customer-document').value = '' + n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8 + n9 + d1 + d2;
+        }
+
+        // --- INICIALIZAÇÃO E EVENTOS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            dateFilter.value = new Date().toISOString().split('T')[0];
+            refreshDashboard();
+            switchView('dashboard');
+        });
+
+        dateFilter.addEventListener('change', refreshDashboard);
+        document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', e => switchView(e.currentTarget.dataset.view)));
+        document.getElementById('generate-customer-btn').addEventListener('click', generateRandomCustomer);
+
+        // --- LÓGICA DO FORMULÁRIO PIX ---
+        document.getElementById('pix-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = document.getElementById('submit-button');
+            const buttonText = document.getElementById('button-text');
+            const loader = document.getElementById('loader');
+
+            buttonText.textContent = 'Gerando...';
+            loader.classList.remove('hidden');
+            submitButton.disabled = true;
+
+            const amount = parseFloat(document.getElementById('amount').value.replace(',', '.')) * 100;
+            const customerName = document.getElementById('customer-name').value;
+            const customerDocument = document.getElementById('customer-document').value;
+
+            const payload = {
+                amount: Math.round(amount),
+                offer_hash: USER_CONFIG.offerHash,
+                payment_method: "pix",
+                installments: 1,
+                customer: { name: customerName, email: "cliente@email.com", document: customerDocument },
+                cart: [{ product_hash: USER_CONFIG.productHash, price: Math.round(amount), quantity: 1 }]
+            };
+
+            try {
+                const response = await fetch(`${API_URL}?api_token=${API_TOKEN}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    displaySuccess(data, amount / 100);
+                } else {
+                    displayError(response.status, data);
+                }
+            } catch (error) {
+                displayError('Rede', { message: 'Não foi possível conectar à API da TriboPay.' });
+            } finally {
+                buttonText.textContent = 'Gerar PIX';
+                loader.classList.add('hidden');
+                submitButton.disabled = false;
+            }
+        });
+
+        // --- Funções do Modal ---
+        function displaySuccess(data, value) {
+            const pixCode = data.pix?.pix_qr_code || 'Código não encontrado na resposta.';
+            resultModal.classList.remove('hidden');
+            resultContent.innerHTML = `
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-green-400">PIX Gerado com Sucesso!</h2>
+                    <p class="text-gray-300 mt-2">Valor de <strong class="text-white">R$ ${value.toFixed(2).replace('.', ',')}</strong></p>
+                    <p class="font-semibold text-gray-300 mt-6">PIX Copia e Cola:</p>
+                    <textarea readonly id="pix-code" class="w-full h-28 p-3 mt-2 bg-gray-900 border border-gray-600 rounded-md text-xs text-gray-300 result-textarea">${pixCode}</textarea>
+                    <button id="copy-button" class="w-full mt-6 py-3 px-4 rounded-lg text-white bg-tribo-pink hover:bg-tribo-pink-dark font-semibold">Copiar Código</button>
+                    <button id="close-modal" class="w-full mt-2 py-2 px-4 rounded-lg text-gray-400 hover:bg-gray-700 font-medium">Fechar</button>
+                </div>
+            `;
+            document.getElementById('copy-button').addEventListener('click', copyPixCode);
+            document.getElementById('close-modal').addEventListener('click', () => resultModal.classList.add('hidden'));
+        }
+
+        function displayError(status, data) {
+            resultModal.classList.remove('hidden');
+            resultContent.innerHTML = `
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-red-400">Ocorreu um Erro</h2>
+                    <p class="text-gray-400 mt-2">Status: ${status}</p>
+                    <div class="mt-4 p-4 bg-red-900/50 text-red-300 rounded-md text-left text-xs"><pre class="whitespace-pre-wrap">${JSON.stringify(data, null, 2)}</pre></div>
+                    <button id="close-modal" class="w-full mt-6 py-2 px-4 rounded-lg text-gray-400 hover:bg-gray-700 font-medium">Fechar</button>
+                </div>
+            `;
+            document.getElementById('close-modal').addEventListener('click', () => resultModal.classList.add('hidden'));
+        }
+        
+        function copyPixCode() {
+            const pixCodeTextarea = document.getElementById('pix-code');
+            if (pixCodeTextarea.value && !pixCodeTextarea.value.includes('não encontrado')) {
+                pixCodeTextarea.select();
+                document.execCommand('copy');
+                const copyButton = document.getElementById('copy-button');
+                copyButton.textContent = 'Copiado!';
+                setTimeout(() => { copyButton.textContent = 'Copiar Código'; }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

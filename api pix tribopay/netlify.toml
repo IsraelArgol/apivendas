@@ -1,0 +1,12 @@
+[build]
+ functions = "backend"
+  publish = "."
+  command = "npm install"
+
+[functions]
+  directory = "backend"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/data/:splat"
+  status = 200
